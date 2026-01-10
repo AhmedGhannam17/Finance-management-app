@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "Amanah",
+    "slug": "amanah",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "android": {
+      "usesCleartextTraffic": true
+    }
+
+
+
+  }
+}
+
