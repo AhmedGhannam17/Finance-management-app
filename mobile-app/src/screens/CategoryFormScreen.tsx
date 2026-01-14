@@ -3,22 +3,28 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { apiService } from '../services/api';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { LoadingSpinner } from '../components/LoadingSpinner';
-import { theme } from '../theme';
+import { TouchableOpacity } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
+import { ScreenHeader } from '../components/ScreenHeader';
+import { Icon } from '../components/Icon';
+import { Typography } from '../components/Typography';
 
 export const CategoryFormScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const categoryId = (route.params as any)?.categoryId;
 
   const [name, setName] = useState('');
@@ -87,11 +93,17 @@ export const CategoryFormScreen: React.FC = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
+      <ScreenHeader 
+        title={categoryId ? 'Edit Category' : 'New Category'} 
+        showBack 
+        onBackPress={() => navigation.goBack()}
+      />
+
         <ScrollView
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
@@ -134,7 +146,7 @@ export const CategoryFormScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -144,6 +156,17 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: theme.spacing.md,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
+  headerTitle: {
+    marginLeft: theme.spacing.md,
   },
   typeContainer: {
     marginBottom: theme.spacing.md,

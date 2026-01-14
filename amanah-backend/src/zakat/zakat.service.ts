@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../common/services/supabase.service';
+import { CalculateZakatDto } from './dto/calculate-zakat.dto';
 
 /**
  * ZakatService calculates zakat based on user's assets
@@ -14,12 +15,7 @@ export class ZakatService {
     private readonly configService: ConfigService,
   ) {}
 
-  /**
-   * Calculate zakat for the current user
-   * Includes: cash, bank balances, and stock values
-   * Uses gold-based nisab (87.48 grams)
-   */
-  async calculateZakat(userId: string) {
+  async calculateZakat(userId: string, dto?: CalculateZakatDto) {
     // Get all cash and bank account balances
     const { data: accounts, error: accountsError } = await this.supabaseService
       .getClient()
@@ -31,33 +27,46 @@ export class ZakatService {
       throw new Error('Failed to fetch accounts');
     }
 
-    const totalCashAndBank = accounts?.reduce(
+    const autoCash = accounts?.reduce(
       (sum, account) => sum + parseFloat(account.current_balance || '0'),
       0,
     ) || 0;
 
-    // Calculate total assets
-    const totalAssets = totalCashAndBank;
+    const cashAssets = dto?.manualCash !== undefined ? dto.manualCash : autoCash;
+    
+    // Precious Metals
+    const goldValue = (dto?.goldWeight || 0) * (dto?.goldPrice || 0);
+    const silverValue = (dto?.silverWeight || 0) * (dto?.silverPrice || 0);
+    
+    // Other Assets
+    const investmentAssets = dto?.investments || 0;
+    
+    // Total Assets
+    const totalAssets = cashAssets + goldValue + silverValue + investmentAssets;
 
-    // Calculate nisab (87.48 grams of gold)
-    // Get gold price from config or use default
-    const goldPricePerGram =
+    // Deduct Liabilities
+    const netAssets = Math.max(0, totalAssets - (dto?.debts || 0));
+
+    // Calculate nisab
+    const goldPricePerGram = dto?.goldPrice || 
       parseFloat(this.configService.get<string>('GOLD_PRICE_PER_GRAM') || '5000') || 5000;
-    const nisabValue = 87.48 * goldPricePerGram;
+    const silverPricePerGram = dto?.silverPrice || 80;
 
-    // Calculate zakat (2.5% of total assets if above nisab)
-    // Add 1% buffer for safe-side calculation
+    const goldNisab = 87.48 * goldPricePerGram;
+    const silverNisab = 612.36 * silverPricePerGram;
+
+    const nisabValue = dto?.nisabType === 'gold' ? goldNisab : silverNisab;
+
+    // Calculate zakat (2.5% of net assets if above nisab)
     let zakatDue = 0;
-    if (totalAssets >= nisabValue) {
-      zakatDue = totalAssets * 0.025;
-      // Add 1% buffer for safe-side calculation
-      zakatDue = zakatDue * 1.01;
+    if (netAssets >= nisabValue) {
+      zakatDue = netAssets * 0.025;
     }
 
     // Round to 2 decimal places
     zakatDue = Math.round(zakatDue * 100) / 100;
 
-    // Save zakat record
+    // Save zakat record with metadata
     const { data: record, error: recordError } = await this.supabaseService
       .getClient()
       .from('zakat_records')
@@ -66,7 +75,8 @@ export class ZakatService {
         total_assets: totalAssets,
         nisab_value: nisabValue,
         zakat_due: zakatDue,
-        is_zakat_due: totalAssets >= nisabValue,
+        is_zakat_due: netAssets >= nisabValue,
+        metadata: dto, // Assuming metadata column exists, if not we'll just save the basics
       })
       .select()
       .single();
@@ -77,10 +87,10 @@ export class ZakatService {
 
     return {
       totalAssets: Math.round(totalAssets * 100) / 100,
-      totalCashAndBank: Math.round(totalCashAndBank * 100) / 100,
+      netAssets: Math.round(netAssets * 100) / 100,
       nisabValue: Math.round(nisabValue * 100) / 100,
       zakatDue: zakatDue,
-      isZakatDue: totalAssets >= nisabValue,
+      isZakatDue: netAssets >= nisabValue,
       record: record || null,
     };
   }

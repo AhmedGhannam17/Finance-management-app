@@ -13,6 +13,7 @@ interface AuthContextType {
   signIn: (username: string, password: string) => Promise<void>;
   signUp: (username: string, password: string, name?: string) => Promise<void>;
   signOut: () => Promise<void>;
+  updateProfile: (data: { name?: string; username?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -91,6 +92,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(null);
   };
 
+  const updateProfile = async (data: { name?: string; username?: string }) => {
+    const updatedUser = await authService.updateProfile(data);
+    
+    // Merge updates with current user state
+    if (user) {
+        const newUserState = { ...user, ...updatedUser }; 
+        setUser(newUserState);
+        await authService.storeUser(newUserState);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -99,6 +111,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         signIn,
         signUp,
         signOut,
+        updateProfile,
       }}
     >
       {children}

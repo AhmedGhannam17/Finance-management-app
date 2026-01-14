@@ -13,11 +13,14 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
-import { theme } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { Typography } from '../components/Typography';
 
 export const LoginScreen: React.FC = () => {
   const navigation = useNavigation();
   const { signIn } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -65,8 +68,8 @@ export const LoginScreen: React.FC = () => {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.header}>
-            <Text style={styles.title}>Welcome Back</Text>
-            <Text style={styles.subtitle}>Sign in to continue</Text>
+            <Typography variant="h1" style={styles.title}>Welcome Back</Typography>
+            <Typography variant="body" color={theme.colors.textSecondary}>Sign in to continue</Typography>
           </View>
 
           <View style={styles.form}>
@@ -97,13 +100,15 @@ export const LoginScreen: React.FC = () => {
             />
 
             <View style={styles.footer}>
-              <Text style={styles.footerText}>Don't have an account? </Text>
-              <Text
-                style={styles.footerLink}
+              <Typography variant="body" color={theme.colors.textSecondary}>Don't have an account? </Typography>
+              <Typography
+                variant="body"
+                color={theme.colors.primary}
+                style={{ fontWeight: '600' }}
                 onPress={() => navigation.navigate('Signup' as never)}
               >
                 Sign Up
-              </Text>
+              </Typography>
             </View>
           </View>
         </ScrollView>
@@ -112,7 +117,7 @@ export const LoginScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -129,13 +134,8 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xxl,
   },
   title: {
-    ...theme.typography.h1,
-    color: theme.colors.text,
     marginBottom: theme.spacing.sm,
-  },
-  subtitle: {
-    ...theme.typography.body,
-    color: theme.colors.textSecondary,
+    color: theme.colors.text,
   },
   form: {
     width: '100%',
@@ -147,14 +147,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: theme.spacing.lg,
-  },
-  footerText: {
-    ...theme.typography.body,
-    color: theme.colors.textSecondary,
-  },
-  footerLink: {
-    ...theme.typography.body,
-    color: theme.colors.primary,
-    fontWeight: '600',
   },
 });

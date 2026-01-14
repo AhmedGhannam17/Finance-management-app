@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -12,9 +12,10 @@ import { apiService } from '../services/api';
 import { Card } from '../components/Card';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { EmptyState } from '../components/EmptyState';
+import { ScreenHeader } from '../components/ScreenHeader';
 import { Typography } from '../components/Typography';
 import { Icon } from '../components/Icon';
-import { theme } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 import { formatCurrency } from '../utils/analytics';
 
 interface Transaction {
@@ -34,11 +35,14 @@ interface Transaction {
 export const AccountTransactionsScreen: React.FC = () => {
   const route = useRoute();
   const navigation = useNavigation<any>();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const { accountId, accountName } = (route.params as any) || {};
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   const loadTransactions = async () => {
     try {
@@ -61,6 +65,19 @@ export const AccountTransactionsScreen: React.FC = () => {
     }, [accountId])
   );
 
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(t => {
+      const d = new Date(t.date);
+      return d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
+    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [transactions, currentDate]);
+
+  const changeMonth = (delta: number) => {
+    const next = new Date(currentDate);
+    next.setMonth(next.getMonth() + delta);
+    setCurrentDate(next);
+  };
+
   const onRefresh = () => {
     setRefreshing(true);
     loadTransactions();
@@ -69,23 +86,33 @@ export const AccountTransactionsScreen: React.FC = () => {
   if (loading) return <LoadingSpinner />;
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="ArrowLeft" size={24} color={theme.colors.text} />
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      <ScreenHeader title={accountName} showBack onBackPress={() => navigation.goBack()} />
+
+      <View style={styles.monthSelector}>
+        <TouchableOpacity onPress={() => changeMonth(-1)} style={styles.monthBtn}>
+          <Icon name="ChevronLeft" size={24} color={theme.colors.primary} />
         </TouchableOpacity>
-        <Typography variant="h3" style={{ marginLeft: 16 }}>{accountName}</Typography>
+        <TouchableOpacity 
+          onPress={() => setCurrentDate(new Date())}
+          style={styles.monthLabel}
+        >
+          <Typography variant="h4">
+            {currentDate.toLocaleDateString('default', { month: 'long', year: 'numeric' })}
+          </Typography>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => changeMonth(1)} style={styles.monthBtn}>
+          <Icon name="ChevronRight" size={24} color={theme.colors.primary} />
+        </TouchableOpacity>
       </View>
 
       <FlatList
-        data={transactions}
+        data={filteredTransactions}
         keyExtractor={(item) => item.id}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
         contentContainerStyle={styles.list}
         renderItem={({ item }) => {
           const isIncome = item.to_account_id === accountId && item.type !== 'transfer';
-          const isExpense = item.from_account_id === accountId && item.type !== 'transfer';
-          const isTransferOut = item.type === 'transfer' && item.from_account_id === accountId;
           const isTransferIn = item.type === 'transfer' && item.to_account_id === accountId;
 
           return (
@@ -111,17 +138,58 @@ export const AccountTransactionsScreen: React.FC = () => {
             </Card>
           );
         }}
-        ListEmptyComponent={<EmptyState message="No transactions yet" />}
+        ListEmptyComponent={
+          <View style={{ marginTop: 60 }}>
+            <EmptyState 
+              message="No transactions found" 
+              subMessage={`You don't have any transactions for ${currentDate.toLocaleDateString('default', { month: 'long' })}.`}
+              icon="History"
+            />
+          </View>
+        }
       />
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
-  header: { flexDirection: 'row', alignItems: 'center', padding: theme.spacing.lg, borderBottomWidth: 1, borderBottomColor: theme.colors.border },
+  header: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    padding: theme.spacing.lg,
+    backgroundColor: theme.colors.surface,
+    borderBottomWidth: 1, 
+    borderBottomColor: theme.colors.border 
+  },
+  backBtn: { padding: 4 },
+  headerTitle: { marginLeft: 12 },
+  monthSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    backgroundColor: theme.colors.surfaceHighlight + '20',
+  },
+  monthBtn: { padding: 8 },
+  monthLabel: { paddingHorizontal: 16, paddingVertical: 4, borderRadius: 20 },
   list: { padding: theme.spacing.lg },
-  card: { marginBottom: theme.spacing.md, padding: theme.spacing.md },
+  card: { 
+    marginBottom: theme.spacing.md, 
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: theme.colors.border
+  },
   txRow: { flexDirection: 'row', alignItems: 'center' },
-  iconBox: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginRight: theme.spacing.md }
+  iconBox: { 
+    width: 40, 
+    height: 40, 
+    borderRadius: 12, 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    marginRight: theme.spacing.md 
+  }
 });

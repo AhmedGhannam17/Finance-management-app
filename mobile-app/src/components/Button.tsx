@@ -8,7 +8,7 @@ import {
   TextStyle,
   View,
 } from 'react-native';
-import { theme } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 interface ButtonProps {
   title: string;
@@ -33,6 +33,9 @@ export const Button: React.FC<ButtonProps> = ({
   leftIcon,
   rightIcon,
 }) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+
   const isPrimary = variant === 'primary';
   const isOutline = variant === 'outline';
   const isGhost = variant === 'ghost';
@@ -98,7 +101,7 @@ export const Button: React.FC<ButtonProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   button: {
     borderRadius: theme.borderRadius.md,
     alignItems: 'center',

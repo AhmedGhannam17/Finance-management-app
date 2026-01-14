@@ -126,9 +126,32 @@ export class CategoriesService {
       .limit(1);
 
     if (transactions && transactions.length > 0) {
-      throw new BadRequestException(
-        'Cannot delete category with existing transactions',
-      );
+      // Find or create "Other" category for reassignment
+      let otherCategory = await this.supabaseService
+        .getClient()
+        .from('categories')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('name', 'Other')
+        .single();
+
+      if (!otherCategory.data) {
+        // Create "Other" if it doesn't exist
+        const { data: newOther } = await this.supabaseService
+          .getClient()
+          .from('categories')
+          .insert({ user_id: userId, name: 'Other', type: 'expense' }) // Default to expense
+          .select()
+          .single();
+        otherCategory = { data: newOther, error: null } as any;
+      }
+
+      await this.supabaseService
+        .getClient()
+        .from('transactions')
+        .update({ category_id: otherCategory.data.id })
+        .eq('user_id', userId)
+        .eq('category_id', id);
     }
 
     const { error } = await this.supabaseService

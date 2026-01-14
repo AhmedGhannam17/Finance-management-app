@@ -11,7 +11,8 @@ import { useNavigation } from '@react-navigation/native';
 import { Button } from '../components/Button';
 import { Typography } from '../components/Typography';
 import { Icon } from '../components/Icon';
-import { theme } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { formatCurrency } from '../utils/analytics';
 
 const { width } = Dimensions.get('window');
 
@@ -24,6 +25,8 @@ const CURRENCIES = [
 
 export const OnboardingScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [step, setStep] = useState(0); // 0: Intro, 1: Currency
   const [selectedCurrency, setSelectedCurrency] = useState('INR');
 
@@ -45,9 +48,9 @@ export const OnboardingScreen: React.FC = () => {
       </View>
       
       <View style={styles.features}>
-        <FeatureItem icon="ShieldCheck" text="Private & Secure data management" />
-        <FeatureItem icon="History" text="Track Every Transaction manually" />
-        <FeatureItem icon="Calculator" text="Accurate Zakat Calculation" />
+        <FeatureItem icon="ShieldCheck" text="Private & Secure data management" theme={theme} styles={styles} />
+        <FeatureItem icon="History" text="Track Every Transaction manually" theme={theme} styles={styles} />
+        <FeatureItem icon="Calculator" text="Accurate Zakat Calculation" theme={theme} styles={styles} />
       </View>
     </View>
   );
@@ -99,7 +102,7 @@ export const OnboardingScreen: React.FC = () => {
   );
 };
 
-const FeatureItem = ({ icon, text }: { icon: any, text: string }) => (
+const FeatureItem = ({ icon, text, theme, styles }: { icon: any, text: string, theme: any, styles: any }) => (
   <View style={styles.featureItem}>
     <View style={styles.featureIcon}>
       <Icon name={icon} size={20} color={theme.colors.primary} />
@@ -108,7 +111,7 @@ const FeatureItem = ({ icon, text }: { icon: any, text: string }) => (
   </View>
 );
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -135,10 +138,12 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '800',
     marginBottom: 12,
+    color: theme.colors.text,
   },
   subtitle: {
     paddingHorizontal: 20,
     lineHeight: 22,
+    color: theme.colors.textSecondary,
   },
   features: {
     gap: 16,

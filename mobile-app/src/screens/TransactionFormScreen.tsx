@@ -11,7 +11,7 @@ import {
   FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { apiService } from '../services/api';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
@@ -19,7 +19,9 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import { Typography } from '../components/Typography';
 import { Card } from '../components/Card';
 import { Icon } from '../components/Icon';
-import { theme } from '../theme';
+import { theme as staticTheme } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { CalendarPicker } from '../components/CalendarPicker';
 
 interface Account {
   id: string;
@@ -37,6 +39,7 @@ interface Category {
 export const TransactionFormScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const route = useRoute();
+  const { theme } = useTheme();
   const transactionId = (route.params as any)?.transactionId;
 
   // Form State
@@ -56,10 +59,18 @@ export const TransactionFormScreen: React.FC = () => {
   
   // UI State
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
+  const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [errors, setErrors] = useState<any>({});
 
+  /* replaced useEffect with useFocusEffect below */
+  
+  useFocusEffect(
+    React.useCallback(() => {
+      loadData();
+    }, [])
+  );
+
   useEffect(() => {
-    loadData();
     if (transactionId) {
       loadTransaction();
     }
@@ -140,6 +151,8 @@ export const TransactionFormScreen: React.FC = () => {
   const getFilteredCategories = () => categories.filter(c => c.type === (type === 'transfer' ? 'expense' : type));
   const getSelectedCategory = () => categories.find(c => c.id === categoryId);
 
+  const styles = getStyles(theme);
+
   if (loading) return <LoadingSpinner />;
 
   return (
@@ -151,6 +164,9 @@ export const TransactionFormScreen: React.FC = () => {
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           
           <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+              <Icon name="ArrowLeft" size={24} color={theme.colors.text} />
+            </TouchableOpacity>
             <Typography variant="h2">{transactionId ? 'Update' : 'New'} Transaction</Typography>
           </View>
 
@@ -172,6 +188,19 @@ export const TransactionFormScreen: React.FC = () => {
             ))}
           </View>
 
+
+          {/* Details */}
+          <View style={[styles.section]}>
+             {/* Name / Description moved to top as requested */}
+            <Typography variant="label" style={styles.sectionLabel}>Title</Typography>
+            <Input 
+              value={note} 
+              onChangeText={setNote} 
+              placeholder="e.g. Grocery Shopping" 
+              style={styles.nameInput}
+            />
+          </View>
+
           {/* Amount Input */}
           <Card variant="flat" style={styles.amountCard}>
             <Typography variant="label" color={theme.colors.textSecondary}>Amount</Typography>
@@ -183,7 +212,6 @@ export const TransactionFormScreen: React.FC = () => {
                 placeholder="0"
                 keyboardType="decimal-pad"
                 style={styles.amountInput}
-                autoFocus={!transactionId}
               />
             </View>
             {errors.amount && <Typography variant="caption" color={theme.colors.error}>{errors.amount}</Typography>}
@@ -232,40 +260,33 @@ export const TransactionFormScreen: React.FC = () => {
             </View>
           )}
 
-          {/* Category Selection */}
-          {type !== 'transfer' && (
-            <View style={styles.section}>
+          {/* Category & Date in a row */}
+          <View style={styles.rowSection}>
+            <View style={{ flex: 1.2, marginRight: theme.spacing.md }}>
               <Typography variant="label" style={styles.sectionLabel}>Category</Typography>
               <TouchableOpacity 
-                style={[styles.selector, errors.categoryId && styles.selectorError]} 
+                style={[styles.smallSelector, errors.categoryId && styles.selectorError]} 
                 onPress={() => setCategoryModalVisible(true)}
               >
-                <View style={styles.selectorContent}>
-                  <Icon name="Tag" size={20} color={theme.colors.primary} />
-                  <Typography style={{ marginLeft: 12 }}>
-                    {getSelectedCategory() ? getSelectedCategory()?.name : 'Choose a category'}
-                  </Typography>
-                </View>
-                <Icon name="ChevronRight" size={20} color={theme.colors.textTertiary} />
+                <Icon name="Tag" size={18} color={theme.colors.primary} />
+                <Typography variant="bodySmall" numberOfLines={1} style={{ marginLeft: 8, flex: 1 }}>
+                  {getSelectedCategory() ? getSelectedCategory()?.name : 'Select'}
+                </Typography>
               </TouchableOpacity>
             </View>
-          )}
 
-          {/* Details */}
-          <View style={styles.section}>
-            <Input 
-              label="Note" 
-              value={note} 
-              onChangeText={setNote} 
-              placeholder="What was this for?" 
-              multiline
-            />
-            <Input 
-              label="Date" 
-              value={date} 
-              onChangeText={setDate} 
-              placeholder="YYYY-MM-DD" 
-            />
+            <View style={{ flex: 1 }}>
+              <Typography variant="label" style={styles.sectionLabel}>Date</Typography>
+              <TouchableOpacity 
+                style={styles.smallSelector} 
+                onPress={() => setDatePickerVisible(true)}
+              >
+                <Icon name="Calendar" size={18} color={theme.colors.primary} />
+                <Typography variant="bodySmall" style={{ marginLeft: 8 }}>
+                  {new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                </Typography>
+              </TouchableOpacity>
+            </View>
           </View>
 
           <Button 
@@ -300,15 +321,37 @@ export const TransactionFormScreen: React.FC = () => {
               </TouchableOpacity>
             )}
             contentContainerStyle={{ padding: theme.spacing.lg }}
+             ListFooterComponent={
+              <TouchableOpacity
+                style={styles.addCategoryBtn}
+                onPress={() => {
+                  setCategoryModalVisible(false);
+                  navigation.navigate('CategoryForm'); // Assuming CategoryForm exists
+                }}
+              >
+                <Icon name="Plus" size={20} color={theme.colors.primary} />
+                <Typography variant="body" color={theme.colors.primary} style={{ marginLeft: 8 }}>
+                   Add New Category
+                </Typography>
+              </TouchableOpacity>
+            }
           />
         </SafeAreaView>
       </Modal>
+
+      {/* Date Picker Modal */}
+      <CalendarPicker
+        visible={datePickerVisible}
+        onClose={() => setDatePickerVisible(false)}
+        onSelectDate={setDate}
+        selectedDate={date}
+      />
 
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -317,7 +360,13 @@ const styles = StyleSheet.create({
     padding: theme.spacing.lg,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: theme.spacing.xl,
+  },
+  backBtn: {
+    marginRight: 12,
+    padding: 4,
   },
   typeSelector: {
     flexDirection: 'row',
@@ -339,6 +388,7 @@ const styles = StyleSheet.create({
   typeTabActiveTransfer: { backgroundColor: theme.colors.primary },
   amountCard: {
     padding: theme.spacing.xl,
+    paddingVertical: theme.spacing.xxl, // Added more padding
     alignItems: 'center',
     backgroundColor: theme.colors.surface,
     marginBottom: theme.spacing.xl,
@@ -349,18 +399,22 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.sm,
   },
   currency: {
-    fontSize: 32,
+    fontSize: 40,
     marginRight: 8,
-    color: theme.colors.textSecondary,
+    color: theme.colors.text, // Changed color for better visibility
+    fontWeight: '700',
   },
   amountInput: {
-    flex: 1,
-    fontSize: 44,
-    fontWeight: '700',
-    backgroundColor: 'transparent',
-    borderWidth: 0,
     padding: 0,
     textAlign: 'center',
+    color: theme.colors.text,
+    height: Platform.OS === 'ios' ? 70 : 80,
+    lineHeight: Platform.OS === 'ios' ? 70 : 80,
+    fontSize: 48,
+    fontWeight: '800',
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    flex: 1,
   },
   section: {
     marginBottom: theme.spacing.xl,
@@ -391,25 +445,40 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.success,
     borderColor: theme.colors.success,
   },
-  selector: {
+  rowSection: {
+    flexDirection: 'row',
+    marginBottom: theme.spacing.lg,
+  },
+  nameInput: {
+    // Styles for the new name input
+     backgroundColor: theme.colors.surface,
+     borderWidth: 1,
+     borderColor: theme.colors.border,
+     fontSize: 18,
+  },
+  noteInput: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    minHeight: 80,
+    textAlignVertical: 'top',
+  },
+  smallSelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     padding: theme.spacing.md,
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.md,
     borderWidth: 1,
     borderColor: theme.colors.border,
-  },
-  selectorContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    height: 48,
   },
   selectorError: {
     borderColor: theme.colors.error,
   },
   saveButton: {
-    marginTop: theme.spacing.lg,
+    marginTop: theme.spacing.xl,
     height: 56,
   },
   modalBg: {
@@ -431,5 +500,17 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
+  },
+  addCategoryBtn: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     justifyContent: 'center',
+     paddingVertical: 20,
+     marginTop: 10,
+     borderWidth: 1,
+     borderColor: theme.colors.primary,
+     borderStyle: 'dashed',
+     borderRadius: theme.borderRadius.md,
+     backgroundColor: theme.colors.primary + '10'
   },
 });

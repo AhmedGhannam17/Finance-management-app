@@ -30,6 +30,14 @@ export const authService = {
   },
 
   /**
+   * Update user profile
+   */
+  updateProfile: async (data: { name?: string; username?: string }) => {
+    const response = await apiService.auth.updateProfile(data);
+    return response.data;
+  },
+
+  /**
    * Sign out the current user
    */
   signOut: async () => {

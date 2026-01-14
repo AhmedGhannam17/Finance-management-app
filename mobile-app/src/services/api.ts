@@ -86,6 +86,7 @@ export const apiService = {
       api.post('/auth/signin', { username, password }),
     signOut: () => api.post('/auth/signout'),
     getMe: () => api.get('/auth/me'),
+    updateProfile: (data: { name?: string; username?: string }) => api.put('/profiles/me', data),
   },
 
   // Accounts
@@ -153,7 +154,7 @@ export const apiService = {
 
   // Zakat
   zakat: {
-    calculate: () => api.get('/zakat/calculate'),
+    calculate: (data: any) => api.post('/zakat/calculate', data),
     getHistory: () => api.get('/zakat/history'),
     getNetWorth: () => api.get('/zakat/net-worth'),
   },

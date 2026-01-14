@@ -14,7 +14,7 @@ export class ProfilesService {
   async getProfile(userId: string) {
     const { data, error } = await this.supabaseService
       .getClient()
-      .from('profiles')
+      .from('users')
       .select('*')
       .eq('id', userId)
       .single();
@@ -32,7 +32,7 @@ export class ProfilesService {
   async updateProfile(userId: string, updates: { name?: string; currency?: string }) {
     const { data, error } = await this.supabaseService
       .getClient()
-      .from('profiles')
+      .from('users')
       .update(updates)
       .eq('id', userId)
       .select()

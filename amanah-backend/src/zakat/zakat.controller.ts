@@ -1,16 +1,17 @@
-import { Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
 import { ZakatService } from './zakat.service';
 import { AuthGuard } from '../common/guards/auth.guard';
 import { CurrentUser } from '../common/decorators/user.decorator';
+import { CalculateZakatDto } from './dto/calculate-zakat.dto';
 
 @Controller('zakat')
 @UseGuards(AuthGuard)
 export class ZakatController {
   constructor(private readonly zakatService: ZakatService) {}
 
-  @Get('calculate')
-  async calculateZakat(@CurrentUser() userId: string) {
-    return this.zakatService.calculateZakat(userId);
+  @Post('calculate')
+  async calculateZakat(@CurrentUser() userId: string, @Body() dto: CalculateZakatDto) {
+    return this.zakatService.calculateZakat(userId, dto);
   }
 
   @Get('history')

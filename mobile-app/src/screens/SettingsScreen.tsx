@@ -1,46 +1,56 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Typography } from '../components/Typography';
 import { Icon } from '../components/Icon';
 import { Card } from '../components/Card';
-import { theme } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { useNavigation } from '@react-navigation/native';
+import { ScreenHeader } from '../components/ScreenHeader';
+import { useState } from 'react';
 
 export const SettingsScreen: React.FC = () => {
+  const navigation = useNavigation<any>();
   const { signOut, user } = useAuth();
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+  const [remindersEnabled, setRemindersEnabled] = useState(false);
 
-  const settingsItems = [
-    { icon: 'User', label: 'Profile', onPress: () => {} },
+  const preferenceItems = [
+    { icon: 'User', label: 'Profile', onPress: () => navigation.navigate('ProfileEdit') },
+    { icon: 'Tag', label: 'Manage Categories', onPress: () => navigation.navigate('CategoryManagement') },
+    { icon: 'Palette', label: 'Theme Settings', onPress: () => navigation.navigate('ThemeSettings') },
     { icon: 'Coins', label: 'Currency', value: 'INR', onPress: () => {} },
-    { icon: 'Bell', label: 'Notifications', onPress: () => {} },
+  ];
+
+  const supportItems = [
     { icon: 'Shield', label: 'Security', onPress: () => {} },
     { icon: 'HelpCircle', label: 'Support', onPress: () => {} },
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      <ScreenHeader title="Settings" />
       <ScrollView contentContainerStyle={styles.content}>
-        <Typography variant="h2" style={styles.title}>Settings</Typography>
 
         <Card style={styles.profileSection} variant="flat">
           <View style={styles.avatar}>
             <Icon name="User" size={32} color={theme.colors.primary} />
           </View>
           <View>
-            <Typography variant="h4">{user?.email?.split('@')[0] || 'User'}</Typography>
-            <Typography variant="caption" color={theme.colors.textSecondary}>{user?.email}</Typography>
+            <Typography variant="h4">{user?.name || user?.username?.split('@')[0] || 'User'}</Typography>
+            <Typography variant="caption" color={theme.colors.textSecondary}>{user?.username}</Typography>
           </View>
         </Card>
 
         <Typography variant="label" style={styles.sectionLabel}>Preference</Typography>
         <Card style={styles.settingsCard} variant="outlined" padding="none">
-          {settingsItems.map((item, index) => (
+          {preferenceItems.map((item, index) => (
             <TouchableOpacity 
               key={index} 
               style={[
                 styles.item, 
-                index < settingsItems.length - 1 && styles.border
+                index < preferenceItems.length - 1 && styles.border
               ]}
               onPress={item.onPress}
             >
@@ -62,6 +72,47 @@ export const SettingsScreen: React.FC = () => {
           ))}
         </Card>
 
+        <Typography variant="label" style={styles.sectionLabel}>Notifications</Typography>
+        <Card style={styles.settingsCard} variant="outlined" padding="none">
+           <View style={styles.item}>
+              <View style={styles.itemLeft}>
+                <View style={[styles.iconBg, { backgroundColor: theme.colors.primary + '10' }]}>
+                  <Icon name="Bell" size={20} color={theme.colors.primary} />
+                </View>
+                <Typography variant="body">Reminders to add expenses</Typography>
+              </View>
+              <Switch 
+                value={remindersEnabled} 
+                onValueChange={setRemindersEnabled}
+                trackColor={{ true: theme.colors.primary }}
+              />
+           </View>
+        </Card>
+
+        <Typography variant="label" style={styles.sectionLabel}>Support & Legal</Typography>
+        <Card style={styles.settingsCard} variant="outlined" padding="none">
+          {supportItems.map((item, index) => (
+            <TouchableOpacity 
+              key={index} 
+              style={[
+                styles.item, 
+                index < supportItems.length - 1 && styles.border
+              ]}
+              onPress={item.onPress}
+            >
+              <View style={styles.itemLeft}>
+                <View style={[styles.iconBg, { backgroundColor: theme.colors.primary + '10' }]}>
+                  <Icon name={item.icon as any} size={20} color={theme.colors.primary} />
+                </View>
+                <Typography variant="body">{item.label}</Typography>
+              </View>
+              <View style={styles.itemRight}>
+                <Icon name="ChevronRight" size={20} color={theme.colors.textTertiary} />
+              </View>
+            </TouchableOpacity>
+          ))}
+        </Card>
+
         <TouchableOpacity style={styles.logoutButton} onPress={signOut}>
           <Icon name="LogOut" size={20} color={theme.colors.error} />
           <Typography variant="body" color={theme.colors.error} style={{ marginLeft: 12, fontWeight: '600' }}>
@@ -73,7 +124,7 @@ export const SettingsScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
