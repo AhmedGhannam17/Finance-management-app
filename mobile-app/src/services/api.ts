@@ -5,17 +5,18 @@ import * as SecureStore from 'expo-secure-store';
 /**
  * API Configuration
  * 
- * For physical device development, update LOCAL_IP below.
+ * Set USE_LIVE_BACKEND to true to test against Vercel even in development.
+ * For local physical device development, update LOCAL_IP below.
  */
+const USE_LIVE_BACKEND = true; // Set to false to use local backend
+const VERCEL_URL = 'https://finance-management-app-three.vercel.app/api';
+
 const getBaseUrl = () => {
-  if (!__DEV__) return 'https://finance-management-app-three.vercel.app/api';
+  if (!__DEV__ || USE_LIVE_BACKEND) return VERCEL_URL;
   
-  // UPDATE THIS IP for physical device testing
-  // On Windows, run 'ipconfig'. Use the IPv4 Address here.
+  // UPDATE THIS IP for physical device testing (run 'ipconfig' on Windows)
   const LOCAL_IP = '192.168.0.157';
 
-  // IMPORTANT: For physical devices, we MUST use the computer's IP.
-  // 10.0.2.2 (Android) and localhost (iOS) only work in simulators.
   return `http://${LOCAL_IP}:3000/api`;
 };
 
