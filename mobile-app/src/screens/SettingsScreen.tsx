@@ -91,12 +91,14 @@ export const SettingsScreen: React.FC = () => {
                     if (granted) {
                       setRemindersEnabled(true);
                       await NotificationService.scheduleWalletReminder();
-                      Alert.alert('Notifications Enabled', 'You will now receive reminders to log your expenses.');
+                      Alert.alert('Notifications Enabled', 'You will now receive reminders to log your expenses daily at 10 PM.');
                     } else {
                       Alert.alert('Permission Denied', 'Please enable notifications in your device settings to receive reminders.');
                     }
                   } else {
                     setRemindersEnabled(false);
+                    await NotificationService.cancelAllNotifications();
+                    Alert.alert('Notifications Disabled', 'Daily reminders have been turned off.');
                   }
                 }}
                 trackColor={{ true: theme.colors.primary }}

@@ -52,6 +52,9 @@ export const NotificationService = {
    * Schedule a local notification
    */
   async scheduleNotification(title: string, body: string, seconds: number = 2) {
+    // Clear any existing notifications first to prevent "spam"
+    await Notifications.cancelAllScheduledNotificationsAsync();
+
     await Notifications.scheduleNotificationAsync({
       content: {
         title: title,
@@ -68,13 +71,31 @@ export const NotificationService = {
   },
 
   /**
-   * Schedule a "Wallet" themed notification
+   * Schedule a "Wallet" themed notification daily at 10 PM
    */
   async scheduleWalletReminder() {
-    await this.scheduleNotification(
-      '💰 Amanah Wallet',
-      'Don\'t forget to log your expenses for today! Keep your finances in check.',
-      5
-    );
+    // Clear ALL existing scheduled notifications before scheduling the daily one
+    await this.cancelAllNotifications();
+
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: '💰 Amanah Wallet',
+        body: 'Don\'t forget to log your expenses for today! Keep your finances in check.',
+        sound: true,
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        hour: 22, // 10 PM
+        minute: 0,
+      } as any, // TypeScript sometimes complains about the trigger structure
+    });
+  },
+
+  /**
+   * Stop all notifications
+   */
+  async cancelAllNotifications() {
+    await Notifications.cancelAllScheduledNotificationsAsync();
+    console.log('[NotificationService] All scheduled notifications cancelled');
   }
 };
