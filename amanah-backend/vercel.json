@@ -7,15 +7,6 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/health",
-      "destination": "/api/health"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "src/main.ts"
-    }
+    { "source": "/(.*)", "destination": "src/main.ts" }
   ]
 }
