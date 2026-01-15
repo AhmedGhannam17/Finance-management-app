@@ -7,7 +7,7 @@ Amanah is a modern, privacy-focused finance management application built for tho
 - **Multi-Account Support**: Manage bank accounts and cash wallets separately with initial and current balance tracking.
 - **Transaction History**: Track income, expenses, and internal transfers with detailed categorization.
 - **Smart Pie Charts**: Visualize spending and income distribution with percentage breakdowns and category toggles.
-- **Dynamic Theming**: Support for FamPay-inspired Dark Mode and beautiful Light Mode themes (Sky Blue, Mint Fresh, Lavender, Peach).
+- **Dynamic Theming**: Support for Dark Mode and beautiful Light Mode themes (Sky Blue, Mint Fresh, Lavender, Peach).
 - **Zakat Calculator**: Accurate Zakat calculations based on current gold/silver prices, synced with your app balance.
 - **Privacy First**: All data is managed manually; no sensitive bank connection required.
 - **Fast & Responsive**: Built with React Native and Reanimated for smooth transitions and a premium feel.

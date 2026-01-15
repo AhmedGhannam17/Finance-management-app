@@ -56,7 +56,7 @@ const getStyles = (theme: any) => StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.mode === 'light' ? theme.colors.primary + '08' : theme.colors.background,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
   },

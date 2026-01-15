@@ -2,15 +2,20 @@
   "expo": {
     "name": "Amanah",
     "slug": "amanah",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "icon": "./src/assets/icon.jpg",
+    "splash": {
+      "image": "./src/assets/splash.jpg",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
     "android": {
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
-        "foregroundImage": "./src/assets/icon.jpg",
+        "foregroundImage": "./src/assets/adaptive-icon.jpg",
         "backgroundColor": "#FFFFFF"
       },
       "package": "com.ahmedghannam.amanah"
@@ -18,7 +23,11 @@
     "ios": {
       "bundleIdentifier": "com.ahmedghannam.amanah",
       "supportsTablet": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "50c7ec64-6865-4bda-a300-a2032eaf2b7b"
+      }
     }
   }
 }
-

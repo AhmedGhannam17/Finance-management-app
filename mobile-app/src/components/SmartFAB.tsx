@@ -45,15 +45,12 @@ export const SmartFAB = forwardRef<SmartFABRef>((_, ref) => {
     opacity: opacity.value,
   }));
 
-  // Prevent touches when hidden
-  const pointerEvents = opacity.value < 0.1 ? 'none' : 'auto';
-
   const styles = getStyles(theme);
 
   return (
     <Animated.View 
       style={[styles.container, animatedStyle]}
-      pointerEvents={pointerEvents as any}
+      pointerEvents="box-none"
     >
       <TouchableOpacity
         style={styles.fab}

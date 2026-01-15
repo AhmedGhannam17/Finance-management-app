@@ -173,8 +173,6 @@ export const AccountsScreen: React.FC = () => {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <ScreenHeader 
         title="Accounts" 
-        rightIcon="Plus" 
-        onRightPress={() => navigation.navigate('AccountForm', { accountId: null })}
       />
       <FlatList
         data={accounts}
