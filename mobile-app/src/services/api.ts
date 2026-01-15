@@ -8,7 +8,7 @@ import * as SecureStore from 'expo-secure-store';
  * For physical device development, update LOCAL_IP below.
  */
 const getBaseUrl = () => {
-  if (!__DEV__) return 'https://your-production-api.com/api';
+  if (!__DEV__) return 'https://finance-management-app-three.vercel.app/api';
   
   // UPDATE THIS IP for physical device testing
   // On Windows, run 'ipconfig'. Use the IPv4 Address here.

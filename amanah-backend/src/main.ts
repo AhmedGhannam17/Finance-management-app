@@ -41,6 +41,7 @@ async function bootstrap() {
     console.log(`🚀 Amanah backend is running on: http://localhost:${port}/api`);
   }
   
+  await app.init();
   return app.getHttpAdapter().getInstance();
 }
 
