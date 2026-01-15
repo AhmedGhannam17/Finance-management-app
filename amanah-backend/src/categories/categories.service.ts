@@ -184,8 +184,8 @@ export class CategoriesService {
       { name: 'Health', type: 'expense' },
       { name: 'Shopping', type: 'expense' },
       { name: 'Entertainment', type: 'expense' },
-      { name: 'Utilities', type: 'expense' },
-      { name: 'Investment', type: 'expense' },
+      { name: 'Repairs', type: 'expense' },
+      { name: 'Grooming', type: 'expense' },
       { name: 'Other', type: 'expense' },
     ];
 

@@ -8,6 +8,8 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { useState } from 'react';
+import { NotificationService } from '../services/NotificationService';
+import { Alert } from 'react-native';
 
 export const SettingsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -83,7 +85,20 @@ export const SettingsScreen: React.FC = () => {
               </View>
               <Switch 
                 value={remindersEnabled} 
-                onValueChange={setRemindersEnabled}
+                onValueChange={async (value) => {
+                  if (value) {
+                    const granted = await NotificationService.requestPermissions();
+                    if (granted) {
+                      setRemindersEnabled(true);
+                      await NotificationService.scheduleWalletReminder();
+                      Alert.alert('Notifications Enabled', 'You will now receive reminders to log your expenses.');
+                    } else {
+                      Alert.alert('Permission Denied', 'Please enable notifications in your device settings to receive reminders.');
+                    }
+                  } else {
+                    setRemindersEnabled(false);
+                  }
+                }}
                 trackColor={{ true: theme.colors.primary }}
               />
            </View>

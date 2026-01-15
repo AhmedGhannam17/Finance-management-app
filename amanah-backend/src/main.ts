@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import * as dns from 'node:dns';
+import helmet from 'helmet';
 
 dns.setDefaultResultOrder('ipv4first');
 
@@ -14,12 +15,15 @@ async function bootstrap() {
     credentials: true,
   });
 
+  // Security headers
+  app.use(helmet());
+
   // Global validation pipe for DTOs
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // Strip properties that don't have decorators
-      forbidNonWhitelisted: true, // Throw error if non-whitelisted properties are sent
-      transform: true, // Automatically transform payloads to DTO instances
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
       transformOptions: {
         enableImplicitConversion: true,
       },
@@ -30,9 +34,16 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   const port = process.env.PORT || 3000;
-  await app.listen(port, '0.0.0.0');
-  console.log(`🚀 Amanah backend is running on: http://localhost:${port}/api`);
+  
+  // For standard deployment
+  if (process.env.NODE_ENV !== 'production') {
+    await app.listen(port, '0.0.0.0');
+    console.log(`🚀 Amanah backend is running on: http://localhost:${port}/api`);
+  }
+  
+  return app.getHttpAdapter().getInstance();
 }
 
-bootstrap();
+// Export the express server for Vercel
+export default bootstrap();
 

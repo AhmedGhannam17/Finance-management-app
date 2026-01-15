@@ -5,12 +5,19 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "icon": "./src/assets/icon.jpg",
     "android": {
-      "usesCleartextTraffic": true
+      "usesCleartextTraffic": true,
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/icon.jpg",
+        "backgroundColor": "#FFFFFF"
+      },
+      "package": "com.ahmedghannam.amanah"
+    },
+    "ios": {
+      "bundleIdentifier": "com.ahmedghannam.amanah",
+      "supportsTablet": true
     }
-
-
-
   }
 }
 
