@@ -22,6 +22,7 @@ interface Account {
   current_balance: string;
   initial_balance: string;
   currency: string;
+  created_at?: string;
 }
 
 export const AccountsScreen: React.FC = () => {
@@ -43,7 +44,13 @@ export const AccountsScreen: React.FC = () => {
         apiService.transactions.getAll(),
       ]);
       
-      setAccounts(accountsRes.data);
+      // Sort accounts by creation date (oldest first)
+      const sortedAccounts = (accountsRes.data || []).sort((a: Account, b: Account) => {
+        const dateA = new Date(a.created_at || 0).getTime();
+        const dateB = new Date(b.created_at || 0).getTime();
+        return dateA - dateB;
+      });
+      setAccounts(sortedAccounts);
       
       let lifetimeIncome = 0;
       let lifetimeExpense = 0;

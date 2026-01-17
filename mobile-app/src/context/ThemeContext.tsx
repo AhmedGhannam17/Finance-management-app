@@ -4,7 +4,7 @@ import { theme as defaultTheme } from '../theme';
 import { colors as defaultColors, darkColors, lightColors } from '../theme/colors';
 
 type ThemeMode = 'dark' | 'light';
-type AccentColor = 'blue' | 'purple' | 'green' | 'orange' | 'pink' | 'zinc';
+type AccentColor = 'blue' | 'purple' | 'green' | 'orange' | 'pink' | 'zinc' | 'light-blue' | 'light-green' | 'light-purple' | 'light-orange';
 
 interface ThemeContextType {
   mode: ThemeMode;
@@ -23,6 +23,10 @@ const accentColors: Record<AccentColor, string> = {
   green: '#22c55e',
   orange: '#f97316',
   pink: '#ec4899',
+  'light-blue': '#0ea5e9',
+  'light-green': '#10b981',
+  'light-purple': '#8b5cf6',
+  'light-orange': '#f97316',
 };
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

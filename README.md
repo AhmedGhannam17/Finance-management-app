@@ -1,6 +1,6 @@
-# Amanah - Manual Finance Management App
+# Amanah - Finance Management App
 
-Amanah is a modern, privacy-focused finance management application built for those who prefer manual tracking and want to manage their Zakat obligations accurately. Inspired by premium financial apps, it features a sleek dark mode, customizable themes, and a native-like experience.
+Amanah is a personal, privacy-focused finance management application built for those who prefer manual tracking and want to manage their Zakat obligations accurately. Inspired by premium financial apps, it features a sleek dark mode, customizable themes, and a native-like experience for managing your finances.
 
 ## ✨ Key Features
 
@@ -55,10 +55,6 @@ Amanah is a modern, privacy-focused finance management application built for tho
    npm install
    npx expo start
    ```
-
-## 📸 Screenshots
-
-*(Add your screenshots here)*
 
 ## 📄 License
 This project is licensed under the MIT License.

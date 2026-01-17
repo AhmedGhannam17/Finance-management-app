@@ -20,6 +20,7 @@ import { Input } from '../components/Input';
 import { useTheme } from '../context/ThemeContext';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { formatCurrency } from '../utils/analytics';
+import { storageService } from '../services/storage';
 
 const NISAB_GOLD_GRAMS = 87.48;
 const NISAB_SILVER_GRAMS = 612.36;
@@ -53,6 +54,11 @@ export const ZakatScreen: React.FC = () => {
     try {
       const nwRes = await apiService.zakat.getNetWorth();
       setAutoCashValue(nwRes.data.netWorth);
+      
+      // Load saved prices
+      const prices = await storageService.getZakatPrices();
+      setGoldPrice(prices.goldPrice);
+      setSilverPrice(prices.silverPrice);
     } catch (error) {
       console.error('Failed to load assets:', error);
     } finally {
@@ -134,10 +140,26 @@ export const ZakatScreen: React.FC = () => {
           <Typography variant="h4" style={styles.sectionTitle}>Market Prices (per gram)</Typography>
           <View style={styles.row}>
             <View style={{ flex: 1, marginRight: 8 }}>
-               <Input label="Gold Price" value={goldPrice} onChangeText={setGoldPrice} keyboardType="numeric" />
+               <Input 
+                 label="Gold Price" 
+                 value={goldPrice} 
+                 onChangeText={(text) => {
+                   setGoldPrice(text);
+                   storageService.setZakatPrices(text, silverPrice);
+                 }} 
+                 keyboardType="numeric" 
+               />
             </View>
             <View style={{ flex: 1, marginLeft: 8 }}>
-               <Input label="Silver Price" value={silverPrice} onChangeText={setSilverPrice} keyboardType="numeric" />
+               <Input 
+                 label="Silver Price" 
+                 value={silverPrice} 
+                 onChangeText={(text) => {
+                   setSilverPrice(text);
+                   storageService.setZakatPrices(goldPrice, text);
+                 }} 
+                 keyboardType="numeric" 
+               />
             </View>
           </View>
           

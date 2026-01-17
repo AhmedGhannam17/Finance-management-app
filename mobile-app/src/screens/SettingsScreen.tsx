@@ -7,9 +7,10 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import { ScreenHeader } from '../components/ScreenHeader';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NotificationService } from '../services/NotificationService';
 import { Alert } from 'react-native';
+import { storageService } from '../services/storage';
 
 export const SettingsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -17,6 +18,15 @@ export const SettingsScreen: React.FC = () => {
   const { theme } = useTheme();
   const styles = getStyles(theme);
   const [remindersEnabled, setRemindersEnabled] = useState(false);
+
+  useEffect(() => {
+    // Load saved notification preference
+    const loadNotificationPreference = async () => {
+      const enabled = await storageService.getNotificationsEnabled();
+      setRemindersEnabled(enabled);
+    };
+    loadNotificationPreference();
+  }, []);
 
   const preferenceItems = [
     { icon: 'User', label: 'Profile', onPress: () => navigation.navigate('ProfileEdit') },
@@ -90,6 +100,7 @@ export const SettingsScreen: React.FC = () => {
                     const granted = await NotificationService.requestPermissions();
                     if (granted) {
                       setRemindersEnabled(true);
+                      await storageService.setNotificationsEnabled(true);
                       await NotificationService.scheduleWalletReminder();
                       Alert.alert('Notifications Enabled', 'You will now receive reminders to log your expenses daily at 10 PM.');
                     } else {
@@ -97,6 +108,7 @@ export const SettingsScreen: React.FC = () => {
                     }
                   } else {
                     setRemindersEnabled(false);
+                    await storageService.setNotificationsEnabled(false);
                     await NotificationService.cancelAllNotifications();
                     Alert.alert('Notifications Disabled', 'Daily reminders have been turned off.');
                   }

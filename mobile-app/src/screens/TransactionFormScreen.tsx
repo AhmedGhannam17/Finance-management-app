@@ -28,6 +28,7 @@ interface Account {
   name: string;
   type: 'cash' | 'bank';
   current_balance: string;
+  created_at?: string;
 }
 
 interface Category {
@@ -82,7 +83,13 @@ export const TransactionFormScreen: React.FC = () => {
         apiService.accounts.getAll(),
         apiService.categories.getAll(),
       ]);
-      setAccounts(accountsRes.data);
+      // Sort accounts by creation date (oldest first)
+      const sortedAccounts = (accountsRes.data || []).sort((a: Account, b: Account) => {
+        const dateA = new Date(a.created_at || 0).getTime();
+        const dateB = new Date(b.created_at || 0).getTime();
+        return dateA - dateB;
+      });
+      setAccounts(sortedAccounts);
       setCategories(categoriesRes.data);
     } catch (error) {
       console.error('Failed to load form data:', error);

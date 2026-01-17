@@ -137,16 +137,16 @@ export const TransactionsScreen: React.FC = () => {
           total += amount;
       });
       
-      return Object.entries(data).map(([name, amount], index) => {
+        return Object.entries(data).map(([name, amount], index) => {
           const percentage = total > 0 ? ((amount / total) * 100).toFixed(0) : '0';
           return {
-              name: `${name} (${percentage}%)`,
-              population: amount,
-              color: chartColors[index % chartColors.length],
-              legendFontColor: theme.colors.textSecondary,
-              legendFontSize: 12,
+            name: `${name} (${percentage}%)`, // Only category and percent
+            population: amount,
+            color: chartColors[index % chartColors.length],
+            legendFontColor: theme.colors.textSecondary,
+            legendFontSize: 12,
           };
-      }).sort((a, b) => b.population - a.population);
+        }).sort((a, b) => b.population - a.population);
   }, [transactions, currentDate, theme, chartType]);
 
   const changeMonth = (delta: number) => {
